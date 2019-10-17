@@ -53,7 +53,8 @@ public class AliyunVod extends CordovaPlugin {
                         filePath = "/" + filePath;
                     }
                 }
-                Log.i(TAG, "add model to fileList from fileArray,  uploadAddress: " + uploadAddress + ", uploadAuth: " + uploadAuth + ", videoId: " + videoId + ", filePath: " + filePath);
+                Log.i(TAG, "add model to fileList from fileArray,  uploadAddress: " + uploadAddress + ", uploadAuth: "
+                        + uploadAuth + ", videoId: " + videoId + ", filePath: " + filePath);
                 VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
                 fileList.add(model);
             }
@@ -154,6 +155,9 @@ public class AliyunVod extends CordovaPlugin {
                 uploader.setUploadAuthAndAddress(info, model.getUploadAuth(), model.getUploadAddress());
             }
         };
+        Log.i(TAG, "call uploader.init");
+        uploader.init(callback);
+        Log.i(TAG, "call uploader.setPartSize");
         uploader.setPartSize(1024 * 1024);
         for (VodUploadFileModel model : fileList) {
             VodInfo vodInfo = new VodInfo();
