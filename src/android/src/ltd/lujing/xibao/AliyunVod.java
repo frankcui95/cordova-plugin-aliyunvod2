@@ -65,8 +65,7 @@ public class AliyunVod extends CordovaPlugin {
                         VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
                         fileList.add(model);
                     }
-                    Context context = this.cordova.getContext();
-                    this.startUpload(fileList, callbackContext, context);
+                    this.startUpload(fileList, callbackContext, cordova.getContext());
                 }
 
                 private void startUpload(List<VodUploadFileModel> fileList, CallbackContext callbackContext,
