@@ -27,8 +27,6 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
-import static org.apache.cordova.CordovaWebViewImpl.TAG;
-
 public class AliyunVod extends CordovaPlugin {
     // 读写权限
     private static String[] PERMISSIONS_STORAGE = { android.Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -36,9 +34,11 @@ public class AliyunVod extends CordovaPlugin {
 
     public static String VOD_REGION = "cn-shanghai";
     public static boolean VOD_RECORD_UPLOAD_PROGRESS_ENABLED = true;
+    public static final String TAG = "AliyunVod";
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        Log.i(TAG, "execute:  " + action);
         if (action.equals("upload")) {
             JSONArray fileArray = args.getJSONArray(0);
             List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
@@ -48,6 +48,12 @@ public class AliyunVod extends CordovaPlugin {
                 String uploadAuth = fileObj.getString("uploadAuth");
                 String videoId = fileObj.getString("videoId");
                 String filePath = fileObj.getString("filePath");
+                if (filePath != null) {
+                    if (!filePath.startsWith("/")) {
+                        filePath = "/" + filePath;
+                    }
+                }
+                Log.i(TAG, "add model to fileList from fileArray,  uploadAddress: " + uploadAddress + ", uploadAuth: " + uploadAuth + ", videoId: " + videoId + ", filePath: " + filePath);
                 VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
                 fileList.add(model);
             }
@@ -152,7 +158,7 @@ public class AliyunVod extends CordovaPlugin {
         for (VodUploadFileModel model : fileList) {
             VodInfo vodInfo = new VodInfo();
             vodInfo.setIsProcess(true);
-            Log.i(TAG, "call uploader.addFile, filePath: "+ model.getFilePath());
+            Log.i(TAG, "call uploader.addFile, filePath: " + model.getFilePath());
             uploader.addFile(model.getFilePath(), vodInfo);
         }
         Log.i(TAG, "call uploader.start");
