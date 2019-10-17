@@ -32,6 +32,7 @@ public class AliyunVod extends CordovaPlugin {
     private static String[] PERMISSIONS_STORAGE = { Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
+    private static int REQUEST_PERMISSION_CODE = 2;
     public static String VOD_REGION = "cn-shanghai";
     public static boolean VOD_RECORD_UPLOAD_PROGRESS_ENABLED = true;
     public static final String TAG = "AliyunVod";
@@ -39,39 +40,47 @@ public class AliyunVod extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         Log.i(TAG, "execute:  " + action);
-        if (action.equals("upload")) {
-            JSONArray fileArray = args.getJSONArray(0);
-            List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
-            for (int i = 0; i < fileArray.length(); i++) {
-                JSONObject fileObj = fileArray.getJSONObject(i);
-                String uploadAddress = fileObj.getString("uploadAddress");
-                String uploadAuth = fileObj.getString("uploadAuth");
-                String videoId = fileObj.getString("videoId");
-                String filePath = fileObj.getString("filePath");
-                if (filePath != null) {
-                    if (!filePath.startsWith("/")) {
-                        filePath = "/" + filePath;
-                    }
+
+        if ("upload".equals(action)) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+                if (!this.cordova.hasPermission(WRITE_EXTERNAL_STORAGE)) {
+                    this.cordova.requestPermissions(this, REQUEST_PERMISSION_CODE, PERMISSIONS_STORAGE);
+                    Log.i(TAG, "request permissions, send an error result and return true");
+                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, "缺少文件读写权限");
+                    callbackContext.sendPluginResult(result);
+                    return true;
                 }
-                Log.i(TAG, "add model to fileList from fileArray,  uploadAddress: " + uploadAddress + ", uploadAuth: "
-                        + uploadAuth + ", videoId: " + videoId + ", filePath: " + filePath);
-                VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
-                fileList.add(model);
             }
-            this.startUpload(fileList, callbackContext, this.cordova.getContext());
+            this.cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    JSONArray fileArray = args.getJSONArray(0);
+                    List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
+                    for (int i = 0; i < fileArray.length(); i++) {
+                        JSONObject fileObj = fileArray.getJSONObject(i);
+                        String uploadAddress = fileObj.getString("uploadAddress");
+                        String uploadAuth = fileObj.getString("uploadAuth");
+                        String videoId = fileObj.getString("videoId");
+                        String filePath = fileObj.getString("filePath");
+                        if (filePath != null) {
+                            if (!filePath.startsWith("/")) {
+                                filePath = "/" + filePath;
+                            }
+                        }
+                        Log.i(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
+                        VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
+                        fileList.add(model);
+                    }
+                    Context context = this.cordova.getContext();
+                    this.startUpload(fileList, callbackContext, context);
+                }
+            });
+
             return true;
         }
         return false;
     }
 
     private void startUpload(List<VodUploadFileModel> fileList, CallbackContext callbackContext, Context context) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            if (ActivityCompat.checkSelfPermission(context,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(context, PERMISSIONS_STORAGE,
-                        REQUEST_PERMISSION_CODE);
-            }
-        }
         final VODUploadClient uploader = new VODUploadClientImpl(context);
         uploader.setRegion(VOD_REGION);
         uploader.setRecordUploadProgressEnabled(VOD_RECORD_UPLOAD_PROGRESS_ENABLED);
@@ -174,11 +183,5 @@ public class AliyunVod extends CordovaPlugin {
         }
         Log.i(TAG, "call uploader.start");
         uploader.start();
-    }
-
-    public static void sendErrorPluginResult(CallbackContext callbackContext, final String message) {
-        PluginResult result = new PluginResult(PluginResult.Status.ERROR, message);
-        result.setKeepCallback(true);
-        callbackContext.sendPluginResult(result);
     }
 }
