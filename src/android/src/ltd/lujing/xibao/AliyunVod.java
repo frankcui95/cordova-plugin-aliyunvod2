@@ -33,14 +33,14 @@ public class AliyunVod extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Log.i(TAG, "execute:  " + action);
+        Log.d(TAG, "execute:  " + action);
 
         if ("upload".equals(action)) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
                 if (!this.cordova.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     this.cordova.requestPermissions(this, REQUEST_PERMISSION_CODE, new String[] {
                             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE });
-                    Log.i(TAG, "request permissions, send an error result and return true");
+                    Log.d(TAG, "request permissions, send an error result and return true");
                     final PluginResult result = new PluginResult(PluginResult.Status.ERROR, "缺少文件读写权限");
                     callbackContext.sendPluginResult(result);
                     return true;
@@ -62,16 +62,16 @@ public class AliyunVod extends CordovaPlugin {
                                     filePath = "/" + filePath;
                                 }
                             }
-                            Log.i(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
+                            Log.d(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
                             final VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId,
                                     filePath);
                             fileList.add(model);
                         }
                     } catch (JSONException e) {
-                        Log.i(TAG, "add model to fileList from fileArray got json error");
+                        Log.d(TAG, "add model to fileList from fileArray got json error");
                     }
                     if (fileList.size() == 0) {
-                        Log.i(TAG, "fileList is empty");
+                        Log.d(TAG, "fileList is empty");
                         callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "文件列表为空"));
                         return;
                     }
@@ -88,6 +88,7 @@ public class AliyunVod extends CordovaPlugin {
                         @Override
                         public void onUploadSucceed(UploadFileInfo info) {
                             final String filePath = info.getFilePath();
+                            Log.d(TAG, "onUploadSucceed, filePath: " + filePath);
                             final VodUploadFileModel model = fileList.stream().filter(f -> f.isFilePath(filePath))
                                     .findFirst().orElse(VodUploadFileModel.empty);
                             final JSONObject jsonObject = new JSONObject();
@@ -97,7 +98,7 @@ public class AliyunVod extends CordovaPlugin {
                                 jsonObject.put("videoId", model.getVideoId());
                                 jsonObject.put("status", info.getStatus());
                             } catch (JSONException e) {
-                                Log.i(TAG, "onUploadSucceed: json error");
+                                Log.d(TAG, "onUploadSucceed, json error");
                             }
                             final PluginResult result = new PluginResult(PluginResult.Status.OK, jsonObject);
                             result.setKeepCallback(true);
@@ -117,7 +118,7 @@ public class AliyunVod extends CordovaPlugin {
                                 jsonObject.put("code", info.getStatus());
                                 jsonObject.put("message", info.getStatus());
                             } catch (JSONException e) {
-                                Log.i(TAG, "onUploadFailed: json error");
+                                Log.d(TAG, "onUploadFailed: json error");
                             }
                             final PluginResult result = new PluginResult(PluginResult.Status.ERROR, jsonObject);
                             result.setKeepCallback(true);
@@ -129,7 +130,7 @@ public class AliyunVod extends CordovaPlugin {
                             final String filePath = info.getFilePath();
                             final VodUploadFileModel model = fileList.stream().filter(f -> f.isFilePath(filePath))
                                     .findFirst().orElse(VodUploadFileModel.empty);
-                            Log.i(TAG, "onUploadProgress: " + filePath + "," + uploadedSize + "/" + totalSize);
+                            Log.d(TAG, "onUploadProgress: " + filePath + "," + uploadedSize + "/" + totalSize);
                             final JSONObject jsonObject = new JSONObject();
                             try {
                                 jsonObject.put("filePath", filePath);
@@ -138,7 +139,7 @@ public class AliyunVod extends CordovaPlugin {
                                 jsonObject.put("totalSize", totalSize);
                                 jsonObject.put("status", info.getStatus());
                             } catch (JSONException e) {
-                                Log.i(TAG, "onUploadProgress: json error");
+                                Log.d(TAG, "onUploadProgress: json error");
                             }
                             final PluginResult result = new PluginResult(PluginResult.Status.OK, jsonObject);
                             result.setKeepCallback(true);
@@ -147,41 +148,39 @@ public class AliyunVod extends CordovaPlugin {
 
                         @Override
                         public void onUploadTokenExpired() {
-                            Log.i(TAG, "onUploadTokenExpired");
+                            Log.d(TAG, "onUploadTokenExpired");
                         }
 
                         @Override
                         public void onUploadRetry(String code, String message) {
-                            Log.i(TAG, "onUploadRetry: " + code + "," + message);
+                            Log.d(TAG, "onUploadRetry: " + code + "," + message);
                         }
 
                         @Override
                         public void onUploadRetryResume() {
-                            Log.i(TAG, "onUploadRetryResume");
+                            Log.d(TAG, "onUploadRetryResume");
                         }
 
                         @Override
                         public void onUploadStarted(UploadFileInfo info) {
                             final String filePath = info.getFilePath();
-                            Log.i(TAG, "onUploadStarted:  " + filePath);
+                            Log.d(TAG, "onUploadStarted:  " + filePath);
                             final VodUploadFileModel model = fileList.stream().filter(f -> f.isFilePath(filePath))
                                     .findFirst().orElse(VodUploadFileModel.empty);
-                            Log.i(TAG, "onUploadStarted: auth:" + model.getUploadAuth() + " , addr: "
-                                    + model.getUploadAddress());
                             uploader.setUploadAuthAndAddress(info, model.getUploadAuth(), model.getUploadAddress());
                         }
                     };
-                    Log.i(TAG, "call uploader.init");
+                    Log.d(TAG, "call uploader.init");
                     uploader.init(callback);
-                    Log.i(TAG, "call uploader.setPartSize");
+                    Log.d(TAG, "call uploader.setPartSize");
                     uploader.setPartSize(1024 * 1024);
                     for (VodUploadFileModel model : fileList) {
                         final VodInfo vodInfo = new VodInfo();
                         vodInfo.setIsProcess(true);
-                        Log.i(TAG, "call uploader.addFile, filePath: " + model.getFilePath());
+                        Log.d(TAG, "call uploader.addFile, filePath: " + model.getFilePath());
                         uploader.addFile(model.getFilePath(), vodInfo);
                     }
-                    Log.i(TAG, "call uploader.start");
+                    Log.d(TAG, "call uploader.start");
                     uploader.start();
                 }
             });
