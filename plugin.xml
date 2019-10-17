@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-aliyunvod" version="1.1.5">
+    <name>aliyunvod</name>
+    <description>Cordova Device Plugin</description>
+    <license>MIT</license>
+    <keywords>cordova,aliyunvod</keywords>
+    <js-module src="www/aliyunvod.js" name="aliyunvod">
+        <clobbers target="aliyunvod" />
+    </js-module>
+    <!-- <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Device">
+                <param name="ios-package" value="CDVDevice"/>
+            </feature>
+        </config-file>
+        <header-file src="src/ios/CDVDevice.h" />
+        <source-file src="src/ios/CDVDevice.m" />
+    </platform> -->
+    <platform name="android">
+		<config-file parent="/*" target="res/xml/config.xml">
+			<feature name="aliyunvod">
+				<param name="android-package" value="ltd.lujing.xibao.AliyunVod" />
+			</feature>
+		</config-file>
+
+		<config-file parent="/manifest" target="AndroidManifest.xml">
+			<uses-permission android:name="android.permission.INTERNET" />
+			<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+			<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+			<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+		</config-file>
+
+ 		<source-file src="src/android/src/ltd/lujing/xibao/AliyunVod.java" target-dir="src/ltd/lujing/xibao" />
+		<source-file src="src/android/src/ltd/lujing/xibao/VodUploadFileModel.java" target-dir="src/ltd/lujing/xibao" />
+		<lib-file src="src/android/lib/aliyun-vod-upload-android-sdk-1.5.3.jar" />
+		<framework src="com.android.support:appcompat-v7:26.1.0" />
+		<framework src="com.android.support:design:24.2.1" />
+		<framework src="com.aliyun.dpa:oss-android-sdk:2.9.2" />
+		<framework src="com.google.code.findbugs:jsr305:3.0.0" />
+		<framework src="com.google.code.gson:gson:2.8.0" />
+	</platform>
+</plugin>
