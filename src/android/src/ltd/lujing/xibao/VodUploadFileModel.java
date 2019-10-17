@@ -36,5 +36,5 @@ public final class VodUploadFileModel {
         return this.filePath.equals(path);
     }
 
-    public static final VodUploadFileModel empty = new VodUploadFileModel(null, null, null, null);
+    public static final VodUploadFileModel empty = new VodUploadFileModel("empty", "empty", "empty", "empty");
 }
