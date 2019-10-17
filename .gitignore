@@ -1,3 +1,5 @@
 .DS_Store
 *.log
 ApsaraVideo_Upload_v1.5.3_Android_20190614
+src/ios/AliyunOSSiOS.framework
+src/ios/VODUpload.framework
