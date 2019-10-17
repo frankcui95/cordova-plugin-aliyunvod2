@@ -41,30 +41,39 @@ public class AliyunVod extends CordovaPlugin {
                     this.cordova.requestPermissions(this, REQUEST_PERMISSION_CODE, new String[] {
                             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE });
                     Log.i(TAG, "request permissions, send an error result and return true");
-                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, "缺少文件读写权限");
+                    final PluginResult result = new PluginResult(PluginResult.Status.ERROR, "缺少文件读写权限");
                     callbackContext.sendPluginResult(result);
                     return true;
                 }
             }
             this.cordova.getThreadPool().execute(new Runnable() {
-                public void run() throws JSONException {
-                    final JSONArray fileArray = args.getJSONArray(0);
+                public void run() {
                     final List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
-                    for (int i = 0; i < fileArray.length(); i++) {
-                        final JSONObject fileObj = fileArray.getJSONObject(i);
-                        final String uploadAddress = fileObj.getString("uploadAddress");
-                        final String uploadAuth = fileObj.getString("uploadAuth");
-                        final String videoId = fileObj.getString("videoId");
-                        String filePath = fileObj.getString("filePath");
-                        if (filePath != null) {
-                            if (!filePath.startsWith("/")) {
-                                filePath = "/" + filePath;
+                    try {
+                        final JSONArray fileArray = args.getJSONArray(0);
+                        for (int i = 0; i < fileArray.length(); i++) {
+                            final JSONObject fileObj = fileArray.getJSONObject(i);
+                            final String uploadAddress = fileObj.getString("uploadAddress");
+                            final String uploadAuth = fileObj.getString("uploadAuth");
+                            final String videoId = fileObj.getString("videoId");
+                            String filePath = fileObj.getString("filePath");
+                            if (filePath != null) {
+                                if (!filePath.startsWith("/")) {
+                                    filePath = "/" + filePath;
+                                }
                             }
+                            Log.i(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
+                            final VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId,
+                                    filePath);
+                            fileList.add(model);
                         }
-                        Log.i(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
-                        final VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId,
-                                filePath);
-                        fileList.add(model);
+                    } catch (JSONException e) {
+                        Log.i(TAG, "add model to fileList from fileArray got json error");
+                    }
+                    if (fileList.size() == 0) {
+                        Log.i(TAG, "fileList is empty");
+                        callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.ERROR, "文件列表为空"));
+                        return;
                     }
                     this.startUpload(fileList, callbackContext, cordova.getContext());
                 }
