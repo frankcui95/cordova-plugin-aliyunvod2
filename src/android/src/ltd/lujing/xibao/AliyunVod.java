@@ -28,9 +28,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class AliyunVod extends CordovaPlugin {
-    // 读写权限
-    private static String[] PERMISSIONS_STORAGE = { Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
     private static int REQUEST_PERMISSION_CODE = 2;
     public static String VOD_REGION = "cn-shanghai";
@@ -43,8 +40,9 @@ public class AliyunVod extends CordovaPlugin {
 
         if ("upload".equals(action)) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-                if (!this.cordova.hasPermission(WRITE_EXTERNAL_STORAGE)) {
-                    this.cordova.requestPermissions(this, REQUEST_PERMISSION_CODE, PERMISSIONS_STORAGE);
+                if (!this.cordova.hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    this.cordova.requestPermissions(this, REQUEST_PERMISSION_CODE, new String[] {
+                            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE });
                     Log.i(TAG, "request permissions, send an error result and return true");
                     PluginResult result = new PluginResult(PluginResult.Status.ERROR, "缺少文件读写权限");
                     callbackContext.sendPluginResult(result);
