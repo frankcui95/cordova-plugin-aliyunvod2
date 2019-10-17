@@ -29,8 +29,8 @@ import java.util.ArrayList;
 
 public class AliyunVod extends CordovaPlugin {
     // 读写权限
-    private static String[] PERMISSIONS_STORAGE = { android.Manifest.permission.READ_EXTERNAL_STORAGE,
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE };
+    private static String[] PERMISSIONS_STORAGE = { Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
     public static String VOD_REGION = "cn-shanghai";
     public static boolean VOD_RECORD_UPLOAD_PROGRESS_ENABLED = true;
@@ -65,6 +65,13 @@ public class AliyunVod extends CordovaPlugin {
     }
 
     private void startUpload(List<VodUploadFileModel> fileList, CallbackContext callbackContext, Context context) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (ActivityCompat.checkSelfPermission(context,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(context, PERMISSIONS_STORAGE,
+                        REQUEST_PERMISSION_CODE);
+            }
+        }
         final VODUploadClient uploader = new VODUploadClientImpl(context);
         uploader.setRegion(VOD_REGION);
         uploader.setRecordUploadProgressEnabled(VOD_RECORD_UPLOAD_PROGRESS_ENABLED);
