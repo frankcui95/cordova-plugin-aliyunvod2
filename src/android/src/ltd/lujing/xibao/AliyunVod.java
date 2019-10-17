@@ -47,14 +47,14 @@ public class AliyunVod extends CordovaPlugin {
                 }
             }
             this.cordova.getThreadPool().execute(new Runnable() {
-                public void run() {
-                    JSONArray fileArray = args.getJSONArray(0);
-                    List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
+                public void run() throws JSONException {
+                    final JSONArray fileArray = args.getJSONArray(0);
+                    final List<VodUploadFileModel> fileList = new ArrayList<VodUploadFileModel>();
                     for (int i = 0; i < fileArray.length(); i++) {
-                        JSONObject fileObj = fileArray.getJSONObject(i);
-                        String uploadAddress = fileObj.getString("uploadAddress");
-                        String uploadAuth = fileObj.getString("uploadAuth");
-                        String videoId = fileObj.getString("videoId");
+                        final JSONObject fileObj = fileArray.getJSONObject(i);
+                        final String uploadAddress = fileObj.getString("uploadAddress");
+                        final String uploadAuth = fileObj.getString("uploadAuth");
+                        final String videoId = fileObj.getString("videoId");
                         String filePath = fileObj.getString("filePath");
                         if (filePath != null) {
                             if (!filePath.startsWith("/")) {
@@ -62,7 +62,8 @@ public class AliyunVod extends CordovaPlugin {
                             }
                         }
                         Log.i(TAG, "add model to fileList from fileArray, " + videoId + ", filePath: " + filePath);
-                        VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId, filePath);
+                        final VodUploadFileModel model = new VodUploadFileModel(uploadAddress, uploadAuth, videoId,
+                                filePath);
                         fileList.add(model);
                     }
                     this.startUpload(fileList, callbackContext, cordova.getContext());
@@ -77,10 +78,10 @@ public class AliyunVod extends CordovaPlugin {
                     final VODUploadCallback callback = new VODUploadCallback() {
                         @Override
                         public void onUploadSucceed(UploadFileInfo info) {
-                            String filePath = info.getFilePath();
-                            VodUploadFileModel model = fileList.stream().filter(f -> f.isFilePath(filePath)).findFirst()
-                                    .orElse(VodUploadFileModel.empty);
-                            JSONObject jsonObject = new JSONObject();
+                            final String filePath = info.getFilePath();
+                            final VodUploadFileModel model = fileList.stream().filter(f -> f.isFilePath(filePath))
+                                    .findFirst().orElse(VodUploadFileModel.empty);
+                            final JSONObject jsonObject = new JSONObject();
                             try {
                                 jsonObject.put("filePath", filePath);
                                 jsonObject.put("url", info.getVodInfo().getCoverUrl());
