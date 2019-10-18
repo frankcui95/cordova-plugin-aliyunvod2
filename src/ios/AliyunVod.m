@@ -9,13 +9,11 @@
     return;
   }
   // 是个文件信息的数组 可能有多个文件
-  NSLog(files);
   // 初始化阿里云sdk
   VODUploadClient *uploader = [VODUploadClient new];
 
   [files enumerateObjectsUsingBlock:^(NSDictionary *file, NSUInteger index,
                                       BOOL *stop) {
-    NSLog(file);
     NSString *filePath = file[@"filePath"];
     VodInfo *vodInfo = [[VodInfo alloc] init];
     [uploader addFile:filePath vodInfo:vodInfo];
@@ -25,7 +23,7 @@
 
   OnUploadFinishedListener finishCallbackFunc =
       ^(UploadFileInfo *fileInfo, VodUploadResult *result) {
-        NSString *theVideoId = nil;
+        __block NSString *theVideoId = nil;
         [weakFiles enumerateObjectsUsingBlock:^(NSDictionary *file,
                                                 NSUInteger index, BOOL *stop) {
           NSString *theFilePath = file[@"filePath"];
@@ -34,35 +32,81 @@
             *stop = YES;
           }
         }];
-        NSMutableDictionary model = [@{
+        NSString *statusStr = [[NSString alloc] init];
+        switch (fileInfo.state) {
+        case VODUploadFileStatusUploading:
+          statusStr = @"UPLOADING";
+          break;
+        case VODUploadFileStatusSuccess:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusReady:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusPaused:
+          statusStr = @"PAUSED";
+          break;
+        case VODUploadFileStatusFailure:
+          statusStr = @"FAIlURE";
+          break;
+        case VODUploadFileStatusCanceled:
+          statusStr = @"CANCELED";
+          break;
+        default:
+          break;
+        }
+        NSMutableDictionary *model = [@{
           @"filePath" : fileInfo.filePath,
-          @"status" : fileInfo.state,
+          @"status" : statusStr,
           @"url" : result.imageUrl,
           @"videoId" : theVideoId,
         } mutableCopy];
-        CDVPluginResult *result =
+        CDVPluginResult *pluginResult =
             [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                           messageAsDictionary:model];
-        [result setKeepCallbackAsBool:true];
-        [self.commandDelegate sendPluginResult:result
+        [pluginResult setKeepCallbackAsBool:true];
+        [self.commandDelegate sendPluginResult:pluginResult
                                     callbackId:command.callbackId];
       };
 
   OnUploadFailedListener failedCallbackFunc =
       ^(UploadFileInfo *fileInfo, NSString *code, NSString *message) {
         NSLog(@"failed code = %@, error message = %@", code, message);
-        NSString *theVideoId = nil;
+        __block NSString *theVideoId = nil;
         [weakFiles enumerateObjectsUsingBlock:^(NSDictionary *file,
                                                 NSUInteger index, BOOL *stop) {
           NSString *theFilePath = file[@"filePath"];
           if ([theFilePath isEqualToString:fileInfo.filePath]) {
-            theVideoId = file[@"videoId"];
+            theVideoId = [file[@"videoId"] stringValue];
             *stop = YES;
           }
         }];
-        NSMutableDictionary model = [@{
+        NSString *statusStr = [[NSString alloc] init];
+        switch (fileInfo.state) {
+        case VODUploadFileStatusUploading:
+          statusStr = @"UPLOADING";
+          break;
+        case VODUploadFileStatusSuccess:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusReady:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusPaused:
+          statusStr = @"PAUSED";
+          break;
+        case VODUploadFileStatusFailure:
+          statusStr = @"FAIlURE";
+          break;
+        case VODUploadFileStatusCanceled:
+          statusStr = @"CANCELED";
+          break;
+        default:
+          break;
+        }
+        NSMutableDictionary *model = [@{
           @"filePath" : fileInfo.filePath,
-          @"status" : fileInfo.state,
+          @"status" : statusStr,
           @"videoId" : theVideoId,
           @"code" : code,
           @"message" : message,
@@ -76,7 +120,7 @@
       };
   OnUploadProgressListener progressCallbackFunc =
       ^(UploadFileInfo *fileInfo, long uploadedSize, long totalSize) {
-        NSString *theVideoId = nil;
+        __block NSString *theVideoId = nil;
         [weakFiles enumerateObjectsUsingBlock:^(NSDictionary *file,
                                                 NSUInteger index, BOOL *stop) {
           NSString *theFilePath = file[@"filePath"];
@@ -85,12 +129,35 @@
             *stop = YES;
           }
         }];
-        NSMutableDictionary model = [@{
+        NSString *statusStr = [[NSString alloc] init];
+        switch (fileInfo.state) {
+        case VODUploadFileStatusUploading:
+          statusStr = @"UPLOADING";
+          break;
+        case VODUploadFileStatusSuccess:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusReady:
+          statusStr = @"SUCCESS";
+          break;
+        case VODUploadFileStatusPaused:
+          statusStr = @"PAUSED";
+          break;
+        case VODUploadFileStatusFailure:
+          statusStr = @"FAIlURE";
+          break;
+        case VODUploadFileStatusCanceled:
+          statusStr = @"CANCELED";
+          break;
+        default:
+          break;
+        }
+        NSMutableDictionary *model = [@{
           @"filePath" : fileInfo.filePath,
-          @"status" : fileInfo.state,
+          @"status" : statusStr,
           @"videoId" : theVideoId,
-          @"uploadedSize" : uploadedSize,
-          @"totalSize" : totalSize,
+          @"uploadedSize" : [NSNumber numberWithLong:uploadedSize],
+          @"totalSize" : [NSNumber numberWithLong:totalSize],
         } mutableCopy];
         CDVPluginResult *result =
             [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -101,7 +168,6 @@
       };
   OnUploadStartedListener uploadStartedCallbackFunc =
       ^(UploadFileInfo *fileInfo) {
-        NSString *theVideoId = nil;
         [weakFiles enumerateObjectsUsingBlock:^(NSDictionary *file,
                                                 NSUInteger index, BOOL *stop) {
           NSString *theFilePath = file[@"filePath"];
