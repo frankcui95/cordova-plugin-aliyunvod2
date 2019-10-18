@@ -16,10 +16,10 @@
         </config-file>
         <header-file src="src/ios/AliyunVod.h" />
         <source-file src="src/ios/AliyunVod.m" />
-		<!-- <framework src="src/ios/AliyunOSSiOS.framework" custom="true" /> -->
-		<!-- <framework src="src/ios/VODUpload.framework" custom="true" /> -->
-		<framework src="VODUpload" type="podspec" spec="1.5.3" />
-		<framework src="AliyunOSSiOS" type="podspec" spec="2.10.7" />
+		<framework src="src/ios/AliyunOSSiOS.framework" custom="true" />
+		<framework src="src/ios/VODUpload.framework" custom="true" />
+		<!-- <framework src="VODUpload" type="podspec" spec="1.5.3" /> -->
+		<!-- <framework src="AliyunOSSiOS" type="podspec" spec="2.10.7" /> -->
     </platform>
     <platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">
