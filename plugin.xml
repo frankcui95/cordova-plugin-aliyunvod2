@@ -11,7 +11,7 @@
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="aliyunvod">
-                <param name="ios-package" value="aliyunvod"/>
+                <param name="ios-package" value="AliyunVod"/>
             </feature>
         </config-file>
         <header-file src="src/ios/AliyunVod.h" />
