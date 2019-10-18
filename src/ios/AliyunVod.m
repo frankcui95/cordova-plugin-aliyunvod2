@@ -81,7 +81,7 @@
     NSMutableDictionary *model = [@{
       @"filePath" : fileInfo.filePath,
       @"status" : statusStr,
-      @"url" : result.imageUrl,
+      // @"url" : result.imageUrl,  //记住在字典里面不能有值是null的对象
       @"videoId" : theVideoId,
     } mutableCopy];
     CDVPluginResult *pluginResult =
@@ -90,6 +90,9 @@
     [pluginResult setKeepCallbackAsBool:true];
     [self.commandDelegate sendPluginResult:pluginResult
                                 callbackId:command.callbackId];
+    NSLog(
+      @"AliyunVod callback finishCallbackFunc %@ sendPluginResult",
+      command.callbackId);
   };
   NSLog(@"AliyunVod define failedCallbackFunc %@", command.callbackId);
   OnUploadFailedListener failedCallbackFunc =
